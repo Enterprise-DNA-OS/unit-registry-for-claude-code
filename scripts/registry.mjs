@@ -110,10 +110,10 @@ export function format(rows) {
   if (!Array.isArray(rows)) return JSON.stringify(rows, null, 2);
   if (!rows.length) return 'No records.';
   const keys = Object.keys(rows[0]);
-  const str = (v) => (v instanceof Date ? v.toISOString().slice(0, 10) : v == null ? '' : typeof v === 'object' ? JSON.stringify(v) : String(v));
-  const w = keys.map((k) => Math.max(k.length, ...rows.map((r) => str(r[k]).length)));
+  const str = (v, k = '') => (/units/.test(k) && typeof v === 'string' && /^-?\d+\.\d+$/.test(v) ? v.replace(/\.?0+$/, '') : v instanceof Date ? v.toISOString().slice(0, 10) : v == null ? '' : typeof v === 'object' ? JSON.stringify(v) : String(v));
+  const w = keys.map((k) => Math.max(k.length, ...rows.map((r) => str(r[k], k).length)));
   return [keys.map((k, i) => k.padEnd(w[i])).join('  '), w.map((n) => '-'.repeat(n)).join('  '),
-    ...rows.map((r) => keys.map((k, i) => str(r[k]).padEnd(w[i])).join('  '))].join('\n');
+    ...rows.map((r) => keys.map((k, i) => str(r[k], k).padEnd(w[i])).join('  '))].join('\n');
 }
 
 export const syntax = [

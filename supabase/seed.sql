@@ -41,7 +41,8 @@ insert into transactions (id, ref, fund_id, investor_id, kind, units, price, amo
  ('00000000-0000-4000-8000-000000001016','PCS-APP-003','00000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000111','application',250000,1.000000,250000.00,'settled',current_date-302,current_date-300,'Syndicate close')
 on conflict (id) do nothing;
 
--- Last quarter's distribution, paid. Priya Raman has no TFN quoted, so 47% was withheld.
+-- Last quarter's distribution, paid. Priya Raman has no TFN quoted, so 47% was withheld. Sofia Marchetti
+-- is non-resident: the accountant gave a rate for that payment, but it was never set on her record.
 insert into distributions (id, name, fund_id, cents_per_unit, record_date, payment_date, status, approved_by, paid_on) values
  ('00000000-0000-4000-8000-000000002001','HPT-DIST-PRIOR','00000000-0000-4000-8000-000000000001',1.750000,current_date-100,current_date-85,'paid','Fund Accountant',current_date-85),
  ('00000000-0000-4000-8000-000000002002','HPT-DIST-LATEST','00000000-0000-4000-8000-000000000001',1.800000,current_date-12,current_date-2,'draft',null,null)
@@ -49,10 +50,10 @@ on conflict (id) do nothing;
 
 insert into distribution_lines (distribution_id, investor_id, units, gross, withholding_rate, withholding, net, reason)
 select d.id, h.investor_id, h.units, round(h.units * d.cents_per_unit / 100, 2),
-       case when i.tax_country = 'AU' and not i.tfn_quoted then 47 else coalesce(case when i.tax_country <> 'AU' then i.withholding_rate end, 0) end,
-       round(round(h.units * d.cents_per_unit / 100, 2) * case when i.tax_country = 'AU' and not i.tfn_quoted then 47 else coalesce(case when i.tax_country <> 'AU' then i.withholding_rate end, 0) end / 100, 2),
-       round(h.units * d.cents_per_unit / 100, 2) - round(round(h.units * d.cents_per_unit / 100, 2) * case when i.tax_country = 'AU' and not i.tfn_quoted then 47 else coalesce(case when i.tax_country <> 'AU' then i.withholding_rate end, 0) end / 100, 2),
-       case when i.tax_country = 'AU' and not i.tfn_quoted then 'No TFN or ABN quoted' end
+       case when i.tax_country = 'AU' and not i.tfn_quoted then 47 else case when i.tax_country <> 'AU' then 10 else 0 end end,
+       round(round(h.units * d.cents_per_unit / 100, 2) * case when i.tax_country = 'AU' and not i.tfn_quoted then 47 else case when i.tax_country <> 'AU' then 10 else 0 end end / 100, 2),
+       round(h.units * d.cents_per_unit / 100, 2) - round(round(h.units * d.cents_per_unit / 100, 2) * case when i.tax_country = 'AU' and not i.tfn_quoted then 47 else case when i.tax_country <> 'AU' then 10 else 0 end end / 100, 2),
+       case when i.tax_country = 'AU' and not i.tfn_quoted then 'No TFN or ABN quoted' when i.tax_country <> 'AU' then 'Non-resident: rate from the fund accountant for this payment' end
 from distributions d
 cross join lateral (
   select t.investor_id, sum(t.units) as units from transactions t

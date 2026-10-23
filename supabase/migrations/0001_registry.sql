@@ -207,7 +207,7 @@ join investors i on i.id = l.investor_id;
 -- What needs a person this week. One row per problem, oldest first within each issue.
 create view attention_view as
 select 'Application waiting to settle' as issue, f.name as fund, t.ref as reference,
-       i.name || ': ' || t.units || ' units, ' || case when i.aml_status <> 'verified' then 'identity not verified' when t.received_on is null then 'money not received' else 'ready to settle' end as detail,
+       i.name || ': ' || trim_scale(t.units) || ' units, ' || case when i.aml_status <> 'verified' then 'identity not verified' when t.received_on is null then 'money not received' else 'ready to settle' end as detail,
        t.created_at::date as since
 from transactions t join funds f on f.id = t.fund_id join investors i on i.id = t.investor_id
 where t.status = 'pending' and t.kind = 'application'
@@ -230,7 +230,7 @@ select 'No contact on file', h.fund, h.holder, 'no email and no address', h.ente
 from holdings_view h join investors i on i.id = h.investor_id
 where h.units > 0 and coalesce(i.email,'') = '' and coalesce(i.address,'') = ''
 union all
-select 'No bank account for distributions', h.fund, h.holder, h.units || ' units', h.entered_on
+select 'No bank account for distributions', h.fund, h.holder, trim_scale(h.units) || ' units', h.entered_on
 from holdings_view h join investors i on i.id = h.investor_id
 where h.units > 0 and not i.bank_on_file;
 
