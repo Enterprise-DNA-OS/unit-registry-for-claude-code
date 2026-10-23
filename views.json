@@ -1,14 +1,29 @@
 [
   {
     "name": "week",
-    "title": "This week",
-    "subtitle": "Unit Registry for Claude Code: what needs attention, rendered by npm run view",
+    "title": "Registry week",
+    "subtitle": "What needs a person this week, rendered by npm run view",
     "sections": [
-      {
-        "title": "Needs attention",
-        "note": "TODO(author): point this at the industry's attention view (overdue, stuck, quiet).",
-        "sql": "select 'replace me' as item, 'TODO(author)' as why"
-      }
+      { "title": "Needs attention", "note": "Applications waiting, unpaid calls, unapproved distributions, stale prices, overdue identity reviews.", "sql": "select issue, fund, reference, detail, since from attention_view order by issue, since" },
+      { "title": "Compliance", "note": "Each rule cites its source in docs/compliance.md.", "sql": "select rule, fund, reference, detail, due_on from compliance_view order by due_on nulls first, rule" }
+    ]
+  },
+  {
+    "name": "register",
+    "title": "Register of holders",
+    "subtitle": "Every current holder, by fund",
+    "sections": [
+      { "title": "Register", "sql": "select fund, holder, holder_ref, holder_type, units, pct_of_fund, value, currency, entered_on, address from register_view order by fund, units desc" }
+    ]
+  },
+  {
+    "name": "funds",
+    "title": "Fund review",
+    "subtitle": "Holders, value, pending work and compliance per fund",
+    "sections": [
+      { "title": "Funds", "sql": "select f.name as fund, f.currency, f.unit_price, f.price_on, (select count(*) from holdings_view h where h.fund_id = f.id and h.units > 0) as holders, (select coalesce(sum(value),0) from holdings_view h where h.fund_id = f.id) as value, (select count(*) from compliance_view c where c.fund = f.name) as compliance_items from funds f order by f.name" },
+      { "title": "Distributions", "sql": "select * from distribution_view order by record_date desc" },
+      { "title": "Capital calls", "sql": "select * from calls_view order by due_on desc, holder" }
     ]
   }
 ]

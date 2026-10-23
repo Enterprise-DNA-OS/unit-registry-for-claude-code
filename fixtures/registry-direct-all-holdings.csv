@@ -1,0 +1,4 @@
+Holder,HIN/SRN,Security,TFN quoted?,Tax type,Tax country for payment,Tax declaration country,Bank details provided?,Email,Address,Quantity,AML risk rating,Next review date,Verification,External ID,First transaction date,Tax dec submitted
+Marlow Family Trust,I0009001,Eastbank Office Fund Units,Yes,Trust,AU,AU,Yes,marlow@example.com,"9 Wharf Street, Brisbane QLD 4000","120,000",Low,2027-03-01,Verified,EXT-1,2024-02-01,Yes
+Daniel Sato,I0009002,Eastbank Office Fund Units,No,Individual,AU,AU,Yes,daniel@example.com,"40 Grey Street, South Brisbane QLD 4101",45000,Medium,2026-12-01,Verified,EXT-2,2024-05-15,No
+Nina Patel,I0009003,Eastbank Office Fund Units,Yes,Individual,AU,AU,No,nina@example.com,,0,Low,,Verified,EXT-3,2024-02-01,Yes

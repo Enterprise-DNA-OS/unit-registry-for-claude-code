@@ -22,11 +22,38 @@ Fill this in once. A worker with context knows. A worker without it guesses.
 
 | When the operator asks for... | Use this |
 |---|---|
-| <!-- TODO(author): one row per slash command --> | `/...` |
+| What is the register / who holds what | `/register` |
+| Tell me about a holder | `/holder` |
+| What needs doing this week | `/attention` |
+| Are we compliant / what is due | `/compliance` |
+| Identity checks due | `/kyc-due` |
+| TFN, PIR, non-resident status | `/tax-residency` |
+| Fund summary | `/funds` |
+| Who owns how much | `/concentration` |
+| New application | `/apply`, then `/applications` to settle |
+| Redemption | `/redeem` |
+| Transfer between holders | `/transfer` |
+| New unit price | `/price` |
+| Distribution | `/distribute`, then `/approve-distribution` |
+| Capital call | `/capital-call` |
+| Periodic or exit statements | `/statements` |
+| Statements, notices, register extract as documents | `/documents` |
+| Note a conversation | `/log` |
+| Write to holders | `/draft-notice` |
+| Monday review | `/weekly-review` |
+| Bring data from Registry Direct | `/import` |
+| Back up everything | `/export` |
+| Change a field or rule | `/customise` |
+| A new page to look at | `/new-view` |
 
-If an ask fits nothing here, run the CLI directly (`npm run <cli> -- --help`) and then propose a new command for it.
+If an ask fits nothing here, run the CLI directly (`npm run registry -- help`) and then propose a new command for it.
 
 ## Hard rules
+
+- Units are issued only by `settle` or `transfer`, and both refuse a holder whose identity is not verified. Never work around that with a direct database write.
+- Never pay, lodge or send. Distributions, redemptions and calls are calculated and recorded here; the bank pays, the accountant lodges, a person sends.
+- Never store a TFN, IRD number or bank account number. Record only whether one was given.
+- A settled transaction is never edited or deleted. Correct it with a reversing adjustment and a note.
 
 - Never send email or messages from here. Draft to `drafts/`, a person sends.
 - Never delete records without an explicit yes in this session. Prefer marking closed or archived.

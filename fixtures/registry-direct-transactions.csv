@@ -1,0 +1,4 @@
+Settlement date,Type,Issuer,Security,Quantity,Price,Unpaid,Paid,Balance
+01/02/2024,Application,Eastbank Property Ltd,Eastbank Office Fund Units,"100,000",1.00,0.00,"100,000.00","100,000"
+30/06/2025,Distribution allotment,Eastbank Property Ltd,Eastbank Office Fund Units,"5,000",1.04,0.00,"5,200.00","105,000"
+14/03/2026,Application,Eastbank Property Ltd,Eastbank Office Fund Units,"15,000",1.06,0.00,"15,900.00","120,000"

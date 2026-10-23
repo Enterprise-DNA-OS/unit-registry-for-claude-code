@@ -1,0 +1,12 @@
+[
+  { "question": "Which holders will lose 47% of their next distribution because no TFN was quoted?", "command": "compliance" },
+  { "question": "How many holders make up half of each fund, and who holds more than 20%?", "command": "concentration" },
+  { "question": "Which applications are stuck, and is each one waiting on identity or on money?", "command": "pending" },
+  { "question": "Who still owes money on the last capital call, and how much?", "command": "calls" },
+  { "question": "Which retail holders are still owed a periodic or exit statement, and by when?", "command": "compliance" },
+  { "question": "Which high-risk holders are overdue for their identity review?", "command": "kyc-due" },
+  { "question": "Which non-resident holders have no self-certification or withholding rate set?", "command": "tax-residency" },
+  { "question": "What did each holder receive, and what was withheld, in the last distribution?", "command": "distribution <name>" },
+  { "question": "Which funds have a unit price more than three months old?", "command": "attention" },
+  { "question": "Which holders could not be paid a distribution today because there is no bank account on file?", "command": "attention" }
+]

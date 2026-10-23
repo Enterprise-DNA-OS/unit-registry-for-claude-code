@@ -1,11 +1,54 @@
 [
   {
-    "name": "example",
-    "title": "TODO(author): the first document this industry must produce",
-    "for_each": "select gen_random_uuid() as id, 'Example' as name",
+    "name": "holding-statement",
+    "title": "Holding statement",
+    "for_each": "select distinct i.id, i.name from investors i join holdings_view h on h.investor_id = i.id where h.units > 0 order by i.name",
     "file": "name",
     "sections": [
-      { "title": "Details", "sql": "select 'replace me' as item, $1::text as record_id" }
+      { "title": "Holder", "sql": "select name as registered_name, holder_ref, address, email from investors where id = $1" },
+      { "title": "Holdings", "sql": "select h.fund, f.legal_name, h.units, f.unit_price, f.price_on as priced_on, h.value, h.currency from holdings_view h join funds f on f.id = h.fund_id where h.investor_id = $1 and h.units > 0 order by h.fund" }
+    ]
+  },
+  {
+    "name": "distribution-statement",
+    "title": "Distribution statement",
+    "for_each": "select l.id, d.name || ' ' || i.name as name from distribution_lines l join distributions d on d.id = l.distribution_id join investors i on i.id = l.investor_id where d.status in ('approved','paid') order by d.record_date, i.name",
+    "file": "name",
+    "sections": [
+      { "title": "Distribution", "sql": "select f.legal_name as fund, d.name as distribution, d.record_date, d.payment_date, d.cents_per_unit from distribution_lines l join distributions d on d.id = l.distribution_id join funds f on f.id = d.fund_id where l.id = $1" },
+      { "title": "Your payment", "note": "Tax components are on the annual tax statement from the fund accountant.", "sql": "select i.name as holder, i.holder_ref, l.units, l.gross, l.withholding_rate, l.withholding, l.net, f.currency, l.reason from distribution_lines l join investors i on i.id = l.investor_id join distributions d on d.id = l.distribution_id join funds f on f.id = d.fund_id where l.id = $1" }
+    ]
+  },
+  {
+    "name": "periodic-statement",
+    "title": "Periodic statement",
+    "for_each": "select s.id, f.name || ' ' || i.name || ' ' || s.kind || ' ' || s.period_end as name from statements s join funds f on f.id = s.fund_id join investors i on i.id = s.investor_id order by s.period_end, i.name",
+    "file": "name",
+    "sections": [
+      { "title": "Statement", "sql": "select f.legal_name as fund, i.name as holder, i.holder_ref, s.kind, s.period_start, s.period_end from statements s join funds f on f.id = s.fund_id join investors i on i.id = s.investor_id where s.id = $1" },
+      { "title": "Balances", "sql": "select (select coalesce(sum(t.units),0) from transactions t where t.fund_id = s.fund_id and t.investor_id = s.investor_id and t.status = 'settled' and t.settled_on < s.period_start) as opening_units, (select coalesce(sum(t.units),0) from transactions t where t.fund_id = s.fund_id and t.investor_id = s.investor_id and t.status = 'settled' and t.settled_on <= s.period_end) as closing_units from statements s where s.id = $1" },
+      { "title": "Transactions in the period", "sql": "select t.settled_on, t.kind, t.units, t.price, t.amount, t.note from statements s join transactions t on t.fund_id = s.fund_id and t.investor_id = s.investor_id and t.status = 'settled' and t.settled_on between s.period_start and s.period_end where s.id = $1 order by t.settled_on" },
+      { "title": "Distributions in the period", "sql": "select d.name, d.payment_date, l.gross, l.withholding, l.net from statements s join distributions d on d.fund_id = s.fund_id and d.status = 'paid' and d.payment_date between s.period_start and s.period_end join distribution_lines l on l.distribution_id = d.id and l.investor_id = s.investor_id where s.id = $1 order by d.payment_date" }
+    ]
+  },
+  {
+    "name": "capital-call-notice",
+    "title": "Capital call notice",
+    "for_each": "select l.id, c.name || ' ' || i.name as name from capital_call_lines l join capital_calls c on c.id = l.call_id join investors i on i.id = l.investor_id order by c.due_on, i.name",
+    "file": "name",
+    "sections": [
+      { "title": "Call", "sql": "select f.legal_name as fund, c.name as call, c.cents_per_unit, c.due_on from capital_call_lines l join capital_calls c on c.id = l.call_id join funds f on f.id = c.fund_id where l.id = $1" },
+      { "title": "Amount due from you", "sql": "select i.name as holder, i.holder_ref, l.units, l.amount, f.currency, l.paid_on from capital_call_lines l join investors i on i.id = l.investor_id join capital_calls c on c.id = l.call_id join funds f on f.id = c.fund_id where l.id = $1" }
+    ]
+  },
+  {
+    "name": "register-extract",
+    "title": "Register of unit holders",
+    "for_each": "select id, name from funds order by name",
+    "file": "name",
+    "sections": [
+      { "title": "Fund", "sql": "select legal_name, structure, jurisdiction, currency from funds where id = $1" },
+      { "title": "Holders", "note": "Name, address, units and the date each holder was entered on the register.", "sql": "select r.holder, r.holder_ref, r.address, r.units, r.entered_on from register_view r join funds f on f.name = r.fund where f.id = $1 order by r.holder" }
     ]
   }
 ]

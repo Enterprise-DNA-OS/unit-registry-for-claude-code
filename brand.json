@@ -1,10 +1,10 @@
 {
   "_": "Your business on every document and view. Change these and run `npm run docs` or `npm run view`.",
-  "business_name": "Your Business",
+  "business_name": "Harbour Fund Services",
   "logo_path": "",
   "primary": "#6654f5",
   "accent": "#ca5a8b",
   "ink": "#0b0c18",
   "paper": "#ffffff",
-  "footer_line": "Prepared with Unit Registry for Claude Code."
+  "footer_line": "Prepared from the register held in Unit Registry for Claude Code."
 }

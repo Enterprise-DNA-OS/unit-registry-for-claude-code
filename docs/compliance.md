@@ -1,0 +1,30 @@
+# Registry compliance checks
+
+Sources checked 23 October 2026. These checks find gaps in the register for a responsible person to act on. They do not lodge anything with the ATO, IRD, ASIC or AUSTRAC, do not verify identity, and are not legal or tax advice. Rules are set per fund by `jurisdiction` (AU or NZ), `structure` (unit_trust, pie, syndicate, company) and `offer_type` (retail or wholesale).
+
+Run `npm run registry -- compliance` or `/compliance`. The view is `compliance_view` in `supabase/migrations/0001_registry.sql`.
+
+| Rule | What the check finds | Source |
+|---|---|---|
+| AU-AMLCTF-CDD | A holder in an AU fund who holds units while identity is pending or failed. `settle` and `transfer` refuse to issue units to an unverified holder. | AML/CTF Act 2006 (Cth) as amended from 31 March 2026: initial customer due diligence (identity, beneficial owners, PEP and sanctions screening) before a designated service is provided, now section 28(1); formerly section 32. [AUSTRAC reform guidance](https://www.austrac.gov.au/amlctf-reform/reforms-guidance/amlctf-program-reform/customer-due-diligence-reform/transitioning-existing-customers-reform) |
+| NZ-AMLCFT-CDD | The same for NZ funds. | Anti-Money Laundering and Countering Financing of Terrorism Act 2009 (NZ), sections 14 to 17: standard customer due diligence for a new business relationship, including verification of identity. [NZLII consolidated Act](https://www.nzlii.org/nz/legis/consol_act/alacfota2009568/) |
+| AML-ONGOING-REVIEW | A current holder whose `aml_next_review` date has passed. The interval per risk rating is the operator's AML programme, not a statutory number. | Ongoing customer due diligence obligations under both Acts; review dates come from your AML/CTF or AML/CFT programme. [AUSTRAC](https://www.austrac.gov.au/amlctf-reform/reforms-guidance/amlctf-program-reform/customer-due-diligence-reform/transitioning-existing-customers-reform) |
+| AU-TFN-WITHHOLDING | An AU resident holder in an AU fund with no TFN or ABN quoted. `distribute` withholds 47% from their distribution. | ATO, withholding from investment income: an investment body (including a unit trust) withholds at the top rate plus Medicare levy, currently 47%, when no TFN or ABN is quoted. Amounts are reported in the annual investment income report. [ATO](https://www.ato.gov.au/businesses-and-organisations/hiring-and-paying-your-workers/payg-withholding/payments-you-need-to-withhold-from/withholding-from-investment-income) |
+| NZ-PIE-PIR | An NZ resident in a PIE fund with no prescribed investor rate on file. | Inland Revenue: if an investor does not give a PIE their PIR, the default rate of 28% applies. [IRD, multi-rate PIEs and prescribed investor rates](https://www.ird.govt.nz/roles/portfolio-investment-entities/multi-rate-pies-and-prescribed-investor-rates) |
+| CRS-SELF-CERT | A holder whose tax residence differs from the fund's country, with no tax residency self-certification recorded. | CRS and FATCA reporting by investment entities. In Australia, reports for each calendar year are due to the ATO by 31 July of the following year. [ATO CRS reporting](https://www.ato.gov.au/businesses-and-organisations/preparing-lodging-and-paying/third-party-reporting/crs-reporting), [ATO FATCA reporting](https://www.ato.gov.au/businesses-and-organisations/preparing-lodging-and-paying/third-party-reporting/fatca-reporting) |
+| NON-RESIDENT-RATE | A non-resident holder with no withholding rate set. `distribute` refuses to calculate until the rate is set. | Operating rule: the rate depends on the payment type and any tax treaty, so it comes from the fund accountant, not from this system. |
+| AU-CA-1017D-PERIODIC | A retail AU fund holder who held units at the end of the last reporting period and has no issued periodic statement. Due date: six months after the period end. | Corporations Act 2001 (Cth) s1017D(3): a periodic statement must be given as soon as practicable, and in any event within 6 months, after the end of the reporting period. Reporting periods are set by the issuer and do not exceed one year. [AustLII s1017D](https://classic.austlii.edu.au/au/legis/cth/consol_act/ca2001172/s1017d.html) |
+| AU-CA-1017D-EXIT | A retail AU fund holder who has left (nil holding) with no issued exit statement. Due date: six months after the exit. | Corporations Act 2001 (Cth) s1017D(2)(d): the period ending when the holder ceases to hold the product is itself a reporting period. [AustLII s1017D](https://classic.austlii.edu.au/au/legis/cth/consol_act/ca2001172/s1017d.html) |
+| CA-169-REGISTER | A current holder with no address on the register. | Corporations Act 2001 (Cth) s169: the register shows each member's name and address and the date the entry was made. Check your trust deed and, in New Zealand, the Financial Markets Conduct Act 2013 register requirements for your scheme. [AustLII s169](https://classic.austlii.edu.au/au/legis/cth/consol_act/ca2001172/s169.html) |
+
+## Records
+
+AUSTRAC expects customer due diligence records kept for at least 7 years after the business relationship ends, and transaction records for 7 years after the transaction. In New Zealand the AML/CFT Act requires at least 5 years (sections 49 and 50). This system has no delete command for holders or transactions: cancel a pending transaction, or record a reversing adjustment. Back up the database to match your retention period.
+
+## What this base does not do
+
+- Pay anyone. Distributions and redemptions are calculated and recorded; the payment run happens in your bank.
+- Lodge anything: AIIR, FATCA, CRS, PIE returns and AMIT member statements stay with the fund accountant or tax agent.
+- Store tax file numbers or bank account numbers. It records only whether they were given.
+- Verify identity. It records the outcome of the check your provider ran.
+- Apply ASIC relief instruments or wholesale exemptions automatically. A wholesale fund is excluded from the s1017D checks because the duty applies to retail clients; confirm that with your adviser.
